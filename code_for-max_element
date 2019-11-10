@@ -1,0 +1,89 @@
+// maximum element in a given range
+#include<bits/stdc++.h>
+using namespace std;
+void buildtree(int *tree,int *a,int index,int s,int e)
+{
+    if(s>e)
+        return;
+    if(s==e)
+    {
+        tree[index]=a[s];
+        return;
+    }
+    int mid=(s+e)/2;
+    buildtree(tree,a,2*index,s,mid);
+    buildtree(tree,a,2*index+1,mid+1,e);
+    int left=tree[2*index];
+    int right=tree[2*index+1];
+    tree[index]=max(left,right);
+    return;
+}
+int query(int *tree,int index,int s,int e,int qs,int qe)
+{
+    if(qe<s || qs>e)
+        return INT_MIN;
+
+    if(qs<=s && qe>=e)
+        return tree[index];
+    int mid=(s+e)/2;
+    return max(query(tree,2*index,s,mid,qs,qe),query(tree,2*index+1,mid+1,e,qs,qe));
+}
+void update_node(int *tree,int index,int s,int e,int i,int value)
+{
+    if(i<s || i>e)
+    return;
+    if(s==e)
+    {
+        tree[index]=value;
+        return;
+    }
+    int mid=(s+e)/2;
+      update_node(tree,2*index,s,mid,i,value);
+     update_node(tree,2*index+1,mid+1,e,i,value);
+    tree[index]=max(tree[2*index],tree[2*index+1]);
+     return;
+}
+void query_range_update(int *tree,int index,int s,int e,int qs,int qe,int incr)
+{
+    if(qs>e || qe<s)
+        return;
+    if(s==e)
+    {
+        tree[index]+=incr;
+        return;
+    }
+    int mid=(s+e)/2;
+    query_range_update(tree,2*index,s,mid,qs,qe,incr);
+    query_range_update(tree,2*index+1,mid+1,e,qs,qe,incr);
+    int left=tree[2*index];
+    int right=tree[2*index+1];
+    tree[index]=max(left,right);
+}
+int main()
+{
+    int n;
+    cin>>n;
+    int a[n];
+    for(int i=0;i<n;i++)
+        cin>>a[i];
+    int *tree=new int[4*n+1];
+      for(int i=0;i<=4*n+1;i++)
+        tree[i]=-1;
+    int index=1,s=0,e=n-1;
+    buildtree(tree,a,index,s,e);
+    int q,x,y;
+    cin>>q;
+    while(q--)
+    {
+        cin>>x>>y;
+        //update_node(tree,1,0,n-1,x,y);
+        query_range_update(tree,1,0,n-1,x,y,5);
+    }
+    cin>>q;
+    while(q--)
+    {
+        cin>>x>>y;
+        cout<<"max value in range "<<x<<" and "<<y<<" is "<<query(tree,1,0,n-1,x,y)<<"\n";
+    }
+}
+
