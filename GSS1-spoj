@@ -1,0 +1,83 @@
+#include<bits/stdc++.h>
+using namespace std;
+#define ll long long
+#define maxk 222222
+#define maxa 50005
+ll a[maxa];
+ll s[maxk];
+ll ms[maxk];
+ll bps[maxk];
+ll bss[maxk];
+struct node1
+{
+    ll s;
+    ll ms;
+    ll bps;
+    ll bss;
+};
+void buildtree(ll index,ll st,ll e)
+{
+    if(st>e)
+        return;
+    if(st==e)
+    {
+        s[index]=a[st];
+        ms[index]=a[st];
+        bps[index]=a[st];
+        bss[index]=a[st];
+        return;
+    }
+    ll mid=(st+e)/2;
+    buildtree(2*index,st,mid);
+    buildtree(2*index+1,mid+1,e);
+    s[index]=s[2*index]+s[2*index+1];
+    ms[index]=max(ms[2*index],max(ms[2*index+1],max(s[2*index]+bps[2*index+1],max(bss[2*index]+bps[2*index+1],bss[2*index]+s[2*index+1]))));
+    bps[index]=max(bps[2*index],s[2*index]+bps[2*index+1]);
+    bss[index]=max(bss[2*index]+s[2*index+1],bss[2*index+1]);
+    return;
+}
+struct node1 query(ll index,ll st,ll e,ll qs,ll qe)
+{
+    struct node1 s1,s2,s3,ss;
+    if(qe<st || qs>e)
+    {
+        ss.s=INT_MIN;
+        ss.ms=INT_MIN;
+        ss.bps=INT_MIN;
+        ss.bss=INT_MIN;
+        return ss;
+    }
+    if(qs<=st && qe>=e)
+    {
+        ss.s=s[index];
+        ss.ms=ms[index];
+        ss.bps=bps[index];
+        ss.bss=bss[index];
+        return ss;
+    }
+    ll mid=(st+e)/2;
+    s1=query(2*index,st,mid,qs,qe);
+    s2=query(2*index+1,mid+1,e,qs,qe);
+    s3.s=s1.s+s2.s;
+    s3.ms=max(s1.ms,max(s2.ms,max(s1.s+s2.bps,max(s1.bss+s2.bps,s1.bss+s2.s))));
+    s3.bps=max(s1.bps,s1.s+s2.bps);
+    s3.bss=max(s1.bss+s2.s,s2.bss);
+    return s3;
+}
+int main()
+{
+ ll n,q,i;
+ scanf("%lld",&n);
+ for(i=1;i<=n;i++)
+        scanf("%lld",&a[i]);
+ scanf("%lld",&q);
+ buildtree(1,1,n);
+ ll x,y;
+ while(q--)
+ {
+     scanf("%lld%lld",&x,&y);
+     struct node1 ans=query(1,1,n,x,y);
+     printf("%lld\n",ans.ms);
+ }
+ return 0;
+}
